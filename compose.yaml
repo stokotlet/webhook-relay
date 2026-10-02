@@ -48,6 +48,11 @@ services:
       RECEIVER_ADMIN_ADDR: :8091
     ports:
       - 127.0.0.1:8091:8091
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://localhost:8091/stats]
+      interval: 2s
+      timeout: 2s
+      retries: 10
   prometheus:
     image: prom/prometheus:v3.3.0
     profiles: [observability]

@@ -29,6 +29,9 @@ func Open(ctx context.Context, url string) (*Store, error) {
 		return nil, err
 	}
 	cfg.MaxConns = 16
+	cfg.ConnConfig.ConnectTimeout = 5 * time.Second
+	cfg.ConnConfig.RuntimeParams["statement_timeout"] = "5000"
+	cfg.ConnConfig.RuntimeParams["lock_timeout"] = "3000"
 	p, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		return nil, err
