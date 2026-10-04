@@ -24,7 +24,7 @@ type fixture struct {
 func (f *fixture) webhook(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 256<<10))
 	if err != nil {
-		http.Error(w, "body too large", 413)
+		http.Error(w, "body too large", http.StatusRequestEntityTooLarge)
 		return
 	}
 	f.Lock()
@@ -33,13 +33,13 @@ func (f *fixture) webhook(w http.ResponseWriter, r *http.Request) {
 	seconds, err := strconv.ParseInt(timestamp, 10, 64)
 	now := time.Now().Unix()
 	if err != nil || seconds < now-300 || seconds > now+300 || f.secret == "" || !delivery.Verify(f.secret, r.Header.Get("Webhook-Id"), timestamp, body, r.Header.Get("Webhook-Signature")) {
-		http.Error(w, "invalid signature or timestamp", 401)
+		http.Error(w, "invalid signature or timestamp", http.StatusUnauthorized)
 		return
 	}
 	f.attempts++
 	if f.failures > 0 {
 		f.failures--
-		http.Error(w, "temporary outage", 503)
+		http.Error(w, "temporary outage", http.StatusServiceUnavailable)
 		return
 	}
 	if f.status != 0 && f.status != 204 {
@@ -60,7 +60,7 @@ func (f *fixture) configure(w http.ResponseWriter, r *http.Request) {
 		Status   int    `json:"status"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&input); err != nil || input.Secret == "" || input.Failures < 0 || (input.Status != 0 && (input.Status < 200 || input.Status > 599)) {
-		http.Error(w, "invalid configuration", 400)
+		http.Error(w, "invalid configuration", http.StatusBadRequest)
 		return
 	}
 	f.Lock()

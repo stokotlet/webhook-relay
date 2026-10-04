@@ -14,7 +14,7 @@ func ValidateURL(raw string, allowPrivate bool) error {
 	if err != nil || u.Hostname() == "" || u.User != nil || u.Fragment != "" {
 		return fmt.Errorf("invalid destination URL")
 	}
-	if u.Scheme != "https" && !(allowPrivate && u.Scheme == "http") {
+	if u.Scheme != "https" && (!allowPrivate || u.Scheme != "http") {
 		return fmt.Errorf("destination must use HTTPS")
 	}
 	if ip, err := netip.ParseAddr(u.Hostname()); err == nil && !allowPrivate && !publicIP(ip) {
@@ -71,7 +71,6 @@ func safeDial(allowPrivate bool) func(context.Context, string, string) (net.Conn
 			if e == nil {
 				return conn, nil
 			}
-			err = e
 		}
 		return nil, fmt.Errorf("destination connection failed")
 	}

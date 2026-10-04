@@ -64,7 +64,7 @@ func run(log *slog.Logger) error {
 		var exists bool
 		err := queue.Pool.QueryRow(pingCtx, "SELECT to_regclass('deliveries') IS NOT NULL").Scan(&exists)
 		if err != nil || !exists {
-			http.Error(w, "not ready", 503)
+			http.Error(w, "not ready", http.StatusServiceUnavailable)
 			return
 		}
 		w.WriteHeader(200)
