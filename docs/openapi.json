@@ -3,7 +3,7 @@
   "info": {
     "title": "Webhook Relay",
     "version": "1.0.0",
-    "description": "Single-tenant durable webhook delivery. 202 means persisted, not delivered."
+    "description": "Accept a webhook and retry delivery. 202 means the row was saved, not that the receiver got it."
   },
   "servers": [
     {
